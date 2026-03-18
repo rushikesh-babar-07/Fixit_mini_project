@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card bg-dark border-secondary">
+            <div class="card-body p-4">
+
+                <h3 class="text-white mb-1">Welcome Back</h3>
+                <p class="text-secondary small mb-4">FixIt by Team FixForce — TKIET Warananagar</p>
+
+                <form method="POST" action="{{ url_for('login') }}">
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary">Email</label>
+                        <input type="email" name="email" class="form-control bg-secondary text-white border-0"
+                               placeholder="your@email.com" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary">Password</label>
+                        <input type="password" name="password" class="form-control bg-secondary text-white border-0"
+                               placeholder="Enter password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger w-100">Login</button>
+
+                </form>
+
+                <p class="text-secondary text-center mt-3 small">
+                    Don't have an account? <a href="{{ url_for('register') }}" class="text-danger">Register here</a>
+                </p>
+
+                <div class="alert alert-secondary mt-3 small">
+                    <strong>Admin Demo:</strong> admin@fixit.com / admin123
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

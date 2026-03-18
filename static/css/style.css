@@ -1,0 +1,47 @@
+/* FixIt - Custom CSS
+   Team FixForce, TKIET Warananagar
+   SYBTech Sem 4 Mini Project 2025-26
+*/
+
+body {
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+}
+
+/* Issue card left border by status */
+.issue-card.status-fixed {
+    border-left: 4px solid #198754;
+}
+
+.issue-card.status-in_progress {
+    border-left: 4px solid #ffc107;
+}
+
+.issue-card.status-reported {
+    border-left: 4px solid #dc3545;
+}
+
+/* Issue photo on card */
+.issue-photo {
+    height: 180px;
+    object-fit: cover;
+}
+
+/* Issue photo on detail page */
+.issue-photo-detail {
+    max-height: 400px;
+    object-fit: cover;
+    width: 100%;
+}
+
+/* Form controls dark */
+.form-control:focus,
+.form-select:focus {
+    border-color: #dc3545;
+    box-shadow: none;
+}
+
+/* Footer */
+.footer {
+    margin-top: auto;
+}

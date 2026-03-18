@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+<!-- HERO SECTION -->
+<div class="p-4 mb-4 bg-dark rounded border border-secondary text-center">
+    <h1 class="fw-bold text-white">Report. Upvote. <span class="text-danger">Get Fixed.</span></h1>
+    <p class="text-secondary">
+        As students of TKIET Warananagar, our team noticed that surrounding areas face daily civic
+        issues with no proper reporting system. FixIt is our solution.
+    </p>
+    {% if not current_user.is_authenticated %}
+        <a href="{{ url_for('register') }}" class="btn btn-danger">Join the Community</a>
+        <a href="{{ url_for('login') }}" class="btn btn-outline-light ms-2">Login</a>
+    {% else %}
+        <a href="{{ url_for('report_issue') }}" class="btn btn-danger">+ Report an Issue</a>
+    {% endif %}
+</div>
+
+<!-- STATS ROW -->
+<div class="row text-center mb-4">
+    <div class="col-md-4">
+        <div class="card bg-dark border-secondary">
+            <div class="card-body">
+                <h2 class="text-danger fw-bold">{{ total_count }}</h2>
+                <p class="text-secondary mb-0">Total Reported</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-dark border-secondary mt-2 mt-md-0">
+            <div class="card-body">
+                <h2 class="text-warning fw-bold">{{ in_progress_count }}</h2>
+                <p class="text-secondary mb-0">In Progress</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-dark border-secondary mt-2 mt-md-0">
+            <div class="card-body">
+                <h2 class="text-success fw-bold">{{ fixed_count }}</h2>
+                <p class="text-secondary mb-0">Fixed</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FILTERS -->
+<div class="card bg-dark border-secondary mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('index') }}" class="row g-2">
+
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control bg-secondary text-white border-0"
+                    placeholder="Search issues..." value="{{ search_keyword }}">
+            </div>
+
+            <div class="col-md-3">
+                <select name="category" class="form-select bg-secondary text-white border-0">
+                    <option value="">All Categories</option>
+                    <option value="Road"        {% if selected_category == 'Road' %}selected{% endif %}>Road</option>
+                    <option value="Water"       {% if selected_category == 'Water' %}selected{% endif %}>Water</option>
+                    <option value="Electricity" {% if selected_category == 'Electricity' %}selected{% endif %}>Electricity</option>
+                    <option value="Garbage"     {% if selected_category == 'Garbage' %}selected{% endif %}>Garbage</option>
+                    <option value="Other"       {% if selected_category == 'Other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <select name="status" class="form-select bg-secondary text-white border-0">
+                    <option value="">All Status</option>
+                    <option value="reported"    {% if selected_status == 'reported' %}selected{% endif %}>Reported</option>
+                    <option value="in_progress" {% if selected_status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="fixed"       {% if selected_status == 'fixed' %}selected{% endif %}>Fixed</option>
+                </select>
+            </div>
+
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-danger w-100">Filter</button>
+            </div>
+
+            <div class="col-md-1">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary w-100">Clear</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- ISSUES LIST -->
+{% if issues %}
+    <p class="text-secondary">Showing {{ issues|length }} issue(s) — sorted by Priority Score</p>
+
+    <div class="row">
+        {% for issue in issues %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card bg-dark border-secondary h-100 issue-card status-{{ issue.status }}">
+
+                <!-- Photo -->
+                {% if issue.photo %}
+                    <img src="{{ url_for('static', filename='uploads/' + issue.photo) }}"
+                         class="card-img-top issue-photo" alt="Issue photo">
+                {% endif %}
+
+                <div class="card-body">
+
+                    <!-- Badges -->
+                    <div class="mb-2">
+                        <span class="badge bg-secondary">{{ issue.category }}</span>
+                        {% if issue.status == 'reported' %}
+                            <span class="badge bg-danger">Reported</span>
+                        {% elif issue.status == 'in_progress' %}
+                            <span class="badge bg-warning text-dark">In Progress</span>
+                        {% else %}
+                            <span class="badge bg-success">Fixed</span>
+                        {% endif %}
+
+                        <!-- Priority Score Badge -->
+                        <span class="badge bg-info text-dark">Score: {{ issue.priority_score }}</span>
+                    </div>
+
+                    <!-- Title -->
+                    <h6 class="card-title text-white">
+                        <a href="{{ url_for('view_issue', issue_id=issue.id) }}" class="text-white text-decoration-none">
+                            {{ issue.title }}
+                        </a>
+                    </h6>
+
+                    <!-- Location -->
+                    <p class="text-secondary small mb-1">📍 {{ issue.location }}</p>
+
+                    <!-- Description -->
+                    <p class="text-secondary small">
+                        {{ issue.description[:80] }}{% if issue.description|length > 80 %}...{% endif %}
+                    </p>
+
+                </div>
+
+                <!-- Card Footer -->
+                <div class="card-footer bg-dark border-secondary d-flex justify-content-between align-items-center">
+                    <small class="text-secondary">{{ issue.created_at.strftime('%d %b %Y') }}</small>
+
+                    <!-- Upvote Button -->
+                    {% if current_user.is_authenticated %}
+                        <form method="POST" action="{{ url_for('upvote', issue_id=issue.id) }}" style="display:inline">
+                            {% if issue.id in voted_issue_ids %}
+                                <button type="submit" class="btn btn-danger btn-sm">▲ {{ issue.upvotes }}</button>
+                            {% else %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm">▲ {{ issue.upvotes }}</button>
+                            {% endif %}
+                        </form>
+                    {% else %}
+                        <span class="text-secondary">▲ {{ issue.upvotes }}</span>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+{% else %}
+    <div class="text-center py-5">
+        <h4 class="text-secondary">No issues found.</h4>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('report_issue') }}" class="btn btn-danger mt-3">Report First Issue</a>
+        {% endif %}
+    </div>
+{% endif %}
+
+<!-- ABOUT SECTION -->
+<div class="card bg-dark border-secondary mt-5 text-center">
+    <div class="card-body">
+        <h5 class="text-white">About This Project</h5>
+        <p class="text-secondary">
+            FixIt is a Second Year Mini Project developed at <strong class="text-white">TKIET Warananagar</strong>
+            under the guidance of <strong class="text-white">Prof. P.V.Nalawade</strong>.
+        </p>
+        <p class="text-white fw-bold mb-1">Team FixForce</p>
+        <p class="text-secondary">Rushikesh Babar &nbsp;|&nbsp; Om Chavan &nbsp;|&nbsp; Pranav Ghadage &nbsp;|&nbsp; Sanket Bunjkar</p>
+        <small class="text-secondary">SYBTech Sem 4 | Mini Project 2025-26</small>
+    </div>
+</div>
+
+{% endblock %}

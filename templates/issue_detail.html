@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{{ issue.title }}{% endblock %}
+
+{% block content %}
+
+<a href="{{ url_for('index') }}" class="text-secondary text-decoration-none">&larr; Back to all issues</a>
+
+<div class="card bg-dark border-secondary mt-3">
+
+    {% if issue.photo %}
+        <img src="{{ url_for('static', filename='uploads/' + issue.photo) }}"
+             class="card-img-top issue-photo-detail" alt="Issue photo">
+    {% endif %}
+
+    <div class="card-body p-4">
+
+        <!-- Badges -->
+        <div class="mb-3">
+            <span class="badge bg-secondary">{{ issue.category }}</span>
+
+            {% if issue.status == 'reported' %}
+                <span class="badge bg-danger">Reported</span>
+            {% elif issue.status == 'in_progress' %}
+                <span class="badge bg-warning text-dark">In Progress</span>
+            {% else %}
+                <span class="badge bg-success">Fixed</span>
+            {% endif %}
+
+            <span class="badge bg-info text-dark">Priority Score: {{ score }}</span>
+        </div>
+
+        <h3 class="text-white">{{ issue.title }}</h3>
+        <p class="text-secondary">📍 {{ issue.location }}</p>
+        <p class="text-white">{{ issue.description }}</p>
+
+        <!-- Info Row -->
+        <div class="row text-secondary small mt-3 pt-3 border-top border-secondary">
+            <div class="col-md-4">Reported by: <strong class="text-white">{{ issue.author.name }}</strong></div>
+            <div class="col-md-4">Date: <strong class="text-white">{{ issue.created_at.strftime('%d %B %Y') }}</strong></div>
+            <div class="col-md-4">Updated: <strong class="text-white">{{ issue.updated_at.strftime('%d %B %Y') }}</strong></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="mt-4 d-flex gap-2 align-items-center">
+
+            {% if current_user.is_authenticated %}
+
+                <form method="POST" action="{{ url_for('upvote', issue_id=issue.id) }}">
+                    {% if has_voted %}
+                        <button type="submit" class="btn btn-danger">▲ {{ issue.upvotes }} Upvotes</button>
+                    {% else %}
+                        <button type="submit" class="btn btn-outline-danger">▲ {{ issue.upvotes }} Upvotes</button>
+                    {% endif %}
+                </form>
+
+                {% if issue.user_id == current_user.id or current_user.role == 'admin' %}
+                    <form method="POST" action="{{ url_for('delete_issue', issue_id=issue.id) }}"
+                          onsubmit="return confirm('Delete this issue?')">
+                        <button type="submit" class="btn btn-outline-secondary">Delete</button>
+                    </form>
+                {% endif %}
+
+            {% else %}
+                <span class="text-secondary">▲ {{ issue.upvotes }} Upvotes</span>
+                <a href="{{ url_for('login') }}" class="btn btn-danger">Login to Upvote</a>
+            {% endif %}
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

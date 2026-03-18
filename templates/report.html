@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Report Issue{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card bg-dark border-secondary">
+            <div class="card-body p-4">
+
+                <h3 class="text-white mb-1">Report a Community Issue</h3>
+                <p class="text-secondary small mb-4">Tell us what is broken in your area.</p>
+
+                <form method="POST" action="{{ url_for('report_issue') }}" enctype="multipart/form-data">
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary">Issue Title *</label>
+                        <input type="text" name="title" class="form-control bg-secondary text-white border-0"
+                               placeholder="e.g. Large pothole near TKIET gate" required maxlength="150">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-secondary">Category *</label>
+                            <select name="category" class="form-select bg-secondary text-white border-0" required>
+                                <option value="">Select Category</option>
+                                <option value="Road">Road / Pothole</option>
+                                <option value="Water">Water / Drainage</option>
+                                <option value="Electricity">Electricity / Streetlight</option>
+                                <option value="Garbage">Garbage / Waste</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-secondary">Location *</label>
+                            <input type="text" name="location" class="form-control bg-secondary text-white border-0"
+                                   placeholder="e.g. Near TKIET Main Gate" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary">Description *</label>
+                        <textarea name="description" class="form-control bg-secondary text-white border-0"
+                                  rows="4" placeholder="Describe the issue clearly..." required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary">Upload Photo (Optional)</label>
+                        <input type="file" name="photo" class="form-control bg-secondary text-white border-0"
+                               accept="image/*">
+                        <small class="text-secondary">Max 5MB. JPG, PNG, GIF, WEBP accepted.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger w-100">Submit Issue Report</button>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
