@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Monthly Report{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <div class="mb-4">
+        <h2 class="section-title"><i class="bi bi-bar-chart-fill text-accent me-2"></i>Monthly Report</h2>
+        <p class="section-subtitle">Auto-generated statistics from backend calculations</p>
+    </div>
+
+    <!-- Overall Stats -->
+    <div class="row g-3 mb-5">
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-number text-accent">{{ total_issues }}</div>
+                <div class="stat-label">Total Issues</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" style="color:var(--success);">{{ total_fixed }}</div>
+                <div class="stat-label">Fixed</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" style="color:var(--warning);">{{ total_in_prog }}</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" style="color:var(--info);">{{ overall_fix_rate }}%</div>
+                <div class="stat-label">Fix Rate</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Breakdown -->
+    <div class="dark-card mb-4">
+        <h5 class="text-white mb-4"><i class="bi bi-pie-chart-fill text-accent me-2"></i>Category Breakdown</h5>
+        <div class="row g-3">
+            {% for cat_name, cat_data in category_stats.items() %}
+            <div class="col-md-6">
+                <div class="d-flex justify-content-between mb-1">
+                    <span style="color:var(--text-secondary); font-size:0.875rem;">
+                        {% if cat_name == 'Road' %}🛣{% elif cat_name == 'Water' %}💧{% elif cat_name == 'Electricity' %}⚡{% elif cat_name == 'Garbage' %}🗑{% else %}📌{% endif %}
+                        {{ cat_name }}
+                    </span>
+                    <span style="color:var(--text-primary); font-size:0.875rem; font-weight:600;">
+                        {{ cat_data.count }} ({{ cat_data.percent }}%)
+                    </span>
+                </div>
+                <div class="progress-dark">
+                    <div class="progress-fill-accent" style="width:{{ cat_data.percent }}%;"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Monthly Table -->
+    <div class="dark-card">
+        <h5 class="text-white mb-4"><i class="bi bi-calendar-fill text-accent me-2"></i>Month Wise Report</h5>
+        {% if monthly_data %}
+        <div class="dark-table" style="border:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Total</th>
+                        <th>Fixed</th>
+                        <th>In Progress</th>
+                        <th>Pending</th>
+                        <th>Fix Rate</th>
+                        <th>Progress</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for month in monthly_data %}
+                    <tr>
+                        <td class="text-white fw-600">{{ month.month }}</td>
+                        <td>{{ month.total }}</td>
+                        <td style="color:var(--success);">{{ month.fixed }}</td>
+                        <td style="color:var(--warning);">{{ month.in_progress }}</td>
+                        <td style="color:var(--danger);">{{ month.reported }}</td>
+                        <td>
+                            <span class="score-badge">{{ month.fix_rate }}%</span>
+                        </td>
+                        <td style="min-width:120px;">
+                            <div class="progress-dark">
+                                <div class="progress-fill-success" style="width:{{ month.fix_rate }}%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state py-3">
+            <p class="empty-text">No data yet. Add some issues first.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="mt-3">
+        <a href="{{ url_for('admin_panel') }}" class="btn btn-ghost btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Admin Panel
+        </a>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <div class="hero-badge mx-auto mb-3"><i class="bi bi-trophy-fill"></i> Community Champions</div>
+        <h2 class="section-title" style="font-size:2rem;">Leaderboard</h2>
+        <p class="section-subtitle">Citizens making the biggest impact in their community</p>
+    </div>
+
+    {% if leaderboard %}
+    <!-- Top 3 Podium -->
+    {% if leaderboard|length >= 3 %}
+    <div class="row g-4 justify-content-center mb-5">
+        <!-- 2nd Place -->
+        <div class="col-md-3 order-md-1 order-2">
+            <div class="dark-card text-center podium-silver">
+                <div class="avatar-lg avatar-silver mx-auto mb-2">
+                    {{ leaderboard[1].user.name[0].upper() }}
+                </div>
+                <div class="rank-2 mb-2">🥈</div>
+                <h6 class="text-white fw-bold">{{ leaderboard[1].user.name }}</h6>
+                <div class="score-badge mx-auto mt-2">{{ leaderboard[1].impact_score }} pts</div>
+                <small class="text-muted-custom">{{ leaderboard[1].issues_count }} issues</small>
+            </div>
+        </div>
+        <!-- 1st Place -->
+        <div class="col-md-3 order-md-2 order-1">
+            <div class="dark-card text-center podium-gold">
+                <div class="avatar-lg avatar-gold mx-auto mb-2">
+                    {{ leaderboard[0].user.name[0].upper() }}
+                </div>
+                <div class="rank-1 mb-2">🏆</div>
+                <h6 class="text-white fw-bold">{{ leaderboard[0].user.name }}</h6>
+                <div class="score-badge mx-auto mt-2">{{ leaderboard[0].impact_score }} pts</div>
+                <small class="text-muted-custom">{{ leaderboard[0].issues_count }} issues</small>
+            </div>
+        </div>
+        <!-- 3rd Place -->
+        <div class="col-md-3 order-md-3 order-3">
+            <div class="dark-card text-center podium-bronze">
+                <div class="avatar-lg avatar-bronze mx-auto mb-2">
+                    {{ leaderboard[2].user.name[0].upper() }}
+                </div>
+                <div class="rank-3 mb-2">🥉</div>
+                <h6 class="text-white fw-bold">{{ leaderboard[2].user.name }}</h6>
+                <div class="score-badge mx-auto mt-2">{{ leaderboard[2].impact_score }} pts</div>
+                <small class="text-muted-custom">{{ leaderboard[2].issues_count }} issues</small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Full Table -->
+    <div class="dark-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Citizen</th>
+                    <th>Issues Reported</th>
+                    <th>Issues Fixed</th>
+                    <th>Upvotes Received</th>
+                    <th>Impact Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in leaderboard %}
+
+                {% set top_score = leaderboard[0].impact_score %}
+                {% if top_score > 0 %}
+                    {% set bar_width = (entry.impact_score / top_score * 100)|int %}
+                {% else %}
+                    {% set bar_width = 0 %}
+                {% endif %}
+
+                {% if current_user.is_authenticated and entry.user.id == current_user.id %}
+                    {% set is_me = true %}
+                {% else %}
+                    {% set is_me = false %}
+                {% endif %}
+
+                <tr class="{{ 'current-user-row' if is_me else '' }}">
+                    <td>
+                        {% if loop.index == 1 %}<span class="rank-1">🏆</span>
+                        {% elif loop.index == 2 %}<span class="rank-2">🥈</span>
+                        {% elif loop.index == 3 %}<span class="rank-3">🥉</span>
+                        {% else %}<span class="text-muted-custom">#{{ loop.index }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avatar-sm">{{ entry.user.name[0].upper() }}</div>
+                            <span class="text-white fw-600">{{ entry.user.name }}</span>
+                            {% if is_me %}
+                                <span class="badge-category badge-water">You</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>{{ entry.issues_count }}</td>
+                    <td><span class="text-success-custom">{{ entry.fixed }}</span></td>
+                    <td><span class="text-warning-custom">▲ {{ entry.upvotes }}</span></td>
+                    <td>
+                        <div>
+                            <span class="score-badge">{{ entry.impact_score }} pts</span>
+                            <div class="impact-bar mt-1">
+                                <div class="impact-bar-fill" data-width="{{ bar_width }}"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="dark-card mt-4 text-center">
+        <p class="formula-text">
+            <i class="bi bi-info-circle text-accent me-1"></i>
+            Impact Score = (Issues × 5) + (Upvotes Received × 2) + (Issues Fixed × 10)
+        </p>
+    </div>
+
+    {% else %}
+    <div class="empty-state dark-card">
+        <div class="empty-icon"><i class="bi bi-trophy"></i></div>
+        <div class="empty-title">No citizens yet</div>
+        <p class="empty-text">Be the first to report an issue and claim the top spot!</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.podium-gold   { border-top: 3px solid #fbbf24; }
+.podium-silver { border-top: 3px solid #94a3b8; padding-top: 30px; margin-top: 20px; }
+.podium-bronze { border-top: 3px solid #f97316; padding-top: 30px; margin-top: 20px; }
+
+.avatar-gold   { background: linear-gradient(135deg, #d97706, #fbbf24); }
+.avatar-silver { background: linear-gradient(135deg, #64748b, #94a3b8); }
+.avatar-bronze { background: linear-gradient(135deg, #c2410c, #f97316); }
+
+.current-user-row { background: rgba(108, 99, 255, 0.05); }
+
+.text-muted-custom   { color: var(--text-muted); }
+.text-success-custom { color: var(--success); }
+.text-warning-custom { color: var(--warning); }
+
+.impact-bar { width: 100px; }
+
+.formula-text { color: var(--text-muted); font-size: 0.875rem; margin: 0; }
+</style>
+
+<script>
+    /* Set impact bar widths from data attributes to avoid inline style warnings */
+    document.querySelectorAll('.impact-bar-fill').forEach(function(el) {
+        el.style.width = el.dataset.width + '%';
+    });
+</script>
+
+{% endblock %}

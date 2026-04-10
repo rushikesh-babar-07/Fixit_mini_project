@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row g-4">
+
+        <!-- Profile Card -->
+        <div class="col-lg-4">
+            <div class="dark-card text-center">
+                <div class="avatar-lg mb-3">{{ current_user.name[0].upper() }}</div>
+                <h4 class="text-white fw-bold">{{ current_user.name }}</h4>
+                <p style="color:var(--text-muted); font-size:0.875rem;">{{ current_user.email }}</p>
+                <span class="badge-category {% if current_user.role == 'admin' %}badge-electricity{% else %}badge-water{% endif %}">
+                    <i class="bi bi-{% if current_user.role == 'admin' %}shield-fill{% else %}person-fill{% endif %} me-1"></i>
+                    {{ current_user.role.title() }}
+                </span>
+                <p style="color:var(--text-muted); font-size:0.8rem;" class="mt-3 mb-0">
+                    Member since {{ current_user.created_at.strftime('%B %Y') }}
+                </p>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-4">
+                    <div class="profile-stat">
+                        <div class="profile-stat-num">{{ user_issues|length }}</div>
+                        <div style="color:var(--text-muted); font-size:0.7rem;">Reported</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="profile-stat">
+                        <div class="profile-stat-num" style="color:var(--success);">{{ fixed_issues|length }}</div>
+                        <div style="color:var(--text-muted); font-size:0.7rem;">Fixed</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="profile-stat">
+                        <div class="profile-stat-num" style="color:var(--warning);">{{ total_upvotes }}</div>
+                        <div style="color:var(--text-muted); font-size:0.7rem;">Upvotes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Issues List -->
+        <div class="col-lg-8">
+            <h5 class="text-white mb-4"><i class="bi bi-list-ul text-accent me-2"></i>My Issues</h5>
+            {% if user_issues %}
+                {% for issue in user_issues %}
+                <div class="dark-card mb-3 d-flex justify-content-between align-items-center" style="padding:16px;">
+                    <div>
+                        <div class="d-flex gap-1 mb-1">
+                            <span class="badge-category badge-{{ issue.category.lower() }}">{{ issue.category }}</span>
+                            <span class="badge-status badge-{{ issue.status }}">{{ issue.status }}</span>
+                        </div>
+                        <a href="{{ url_for('view_issue', issue_id=issue.id) }}" class="text-white fw-600 d-block" style="font-size:0.9rem;">
+                            {{ issue.title }}
+                        </a>
+                        <small style="color:var(--text-muted);">{{ issue.created_at.strftime('%d %b %Y') }} · ▲ {{ issue.upvotes }} upvotes</small>
+                    </div>
+                    <span class="score-badge ms-3">{{ issue.priority_score }}</span>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="empty-state dark-card">
+                <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+                <div class="empty-title">No issues yet</div>
+                <a href="{{ url_for('report_issue') }}" class="btn btn-accent mt-3">Report First Issue</a>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

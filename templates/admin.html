@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <div class="mb-4">
+        <h2 class="section-title"><i class="bi bi-shield-fill text-accent me-2"></i>Admin Dashboard</h2>
+        <p class="section-subtitle">Manage all reported issues and update their status</p>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-number text-accent">{{ total_issues }}</div>
+                <div class="stat-label">Total Issues</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" style="color:var(--info);">{{ total_users }}</div>
+                <div class="stat-label">Registered Users</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" style="color:var(--success);">{{ fixed_count }}</div>
+                <div class="stat-label">Issues Fixed</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" style="color:var(--warning);">{{ in_progress_count }}</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="text-white mb-0">All Issues — Sorted by Priority Score</h5>
+        <a href="{{ url_for('monthly_report') }}" class="btn btn-ghost btn-sm">
+            <i class="bi bi-bar-chart-fill me-1"></i>Monthly Report
+        </a>
+    </div>
+
+    <div class="dark-table">
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Issue</th>
+                        <th>Category</th>
+                        <th>Location</th>
+                        <th>Upvotes</th>
+                        <th>Priority</th>
+                        <th>Reported By</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Update</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for issue in issues %}
+                    <tr>
+                        <td style="color:var(--text-muted);">{{ issue.id }}</td>
+                        <td>
+                            <a href="{{ url_for('view_issue', issue_id=issue.id) }}" class="text-accent" style="font-size:0.875rem;">
+                                {{ issue.title[:35] }}{% if issue.title|length > 35 %}...{% endif %}
+                            </a>
+                        </td>
+                        <td><span class="badge-category badge-{{ issue.category.lower() }}">{{ issue.category }}</span></td>
+                        <td style="color:var(--text-muted); font-size:0.8rem;">{{ issue.location[:20] }}</td>
+                        <td style="color:var(--warning);">▲ {{ issue.upvotes }}</td>
+                        <td><span class="score-badge">{{ issue.priority_score }}</span></td>
+                        <td style="font-size:0.8rem;">{{ issue.author.name }}</td>
+                        <td style="color:var(--text-muted); font-size:0.8rem;">{{ issue.created_at.strftime('%d %b') }}</td>
+                        <td>
+                            <span class="badge-status badge-{{ issue.status }}">
+                                {% if issue.status == 'reported' %}Reported
+                                {% elif issue.status == 'in_progress' %}In Progress
+                                {% else %}Fixed{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('update_status', issue_id=issue.id) }}" class="d-flex gap-1">
+                                <select name="status" class="filter-select-dark">
+                                    <option value="reported"    {% if issue.status == 'reported' %}selected{% endif %}>Reported</option>
+                                    <option value="in_progress" {% if issue.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                    <option value="fixed"       {% if issue.status == 'fixed' %}selected{% endif %}>Fixed</option>
+                                </select>
+                                <button type="submit" class="btn btn-accent" style="padding:4px 10px; font-size:0.75rem;">
+                                    <i class="bi bi-check-lg"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

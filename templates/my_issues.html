@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}My Issues{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4">
+        <h2 class="section-title"><i class="bi bi-list-ul text-accent me-2"></i>My Reported Issues</h2>
+        <p class="section-subtitle">Issues you have reported to the community</p>
+    </div>
+
+    {% if issues %}
+    <div class="row g-4">
+        {% for issue in issues %}
+        <div class="col-md-6">
+            <div class="issue-card">
+                <div class="issue-body">
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                        <span class="badge-category badge-{{ issue.category.lower() }}">{{ issue.category }}</span>
+                        <span class="badge-status badge-{{ issue.status }}">
+                            {% if issue.status == 'reported' %}Reported
+                            {% elif issue.status == 'in_progress' %}In Progress
+                            {% else %}Fixed{% endif %}
+                        </span>
+                        <span class="score-badge"><i class="bi bi-lightning-fill"></i> {{ issue.priority_score }}</span>
+                    </div>
+                    <div class="issue-title">
+                        <a href="{{ url_for('view_issue', issue_id=issue.id) }}">{{ issue.title }}</a>
+                    </div>
+                    <div class="issue-location"><i class="bi bi-geo-alt-fill"></i> {{ issue.location }}</div>
+                </div>
+                <div class="issue-footer">
+                    <small style="color:var(--text-muted);">{{ issue.created_at.strftime('%d %b %Y') }} · ▲ {{ issue.upvotes }}</small>
+                    <form method="POST" action="{{ url_for('delete_issue', issue_id=issue.id) }}"
+                          onsubmit="return confirm('Delete?')">
+                        <button type="submit" class="btn btn-danger-soft" style="padding:4px 10px; font-size:0.75rem;">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state dark-card">
+        <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+        <div class="empty-title">No issues yet</div>
+        <p class="empty-text">You haven't reported any issues yet.</p>
+        <a href="{{ url_for('report_issue') }}" class="btn btn-accent mt-3">
+            <i class="bi bi-plus-circle-fill me-2"></i>Report First Issue
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

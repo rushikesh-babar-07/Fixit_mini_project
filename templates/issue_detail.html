@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}{{ issue.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <a href="{{ url_for('index') }}" style="color:var(--text-muted); font-size:0.875rem;" class="d-inline-flex align-items-center gap-1 mb-4">
+        <i class="bi bi-arrow-left"></i> Back to all issues
+    </a>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+
+            {% if issue.photo %}
+            <img src="{{ url_for('static', filename='uploads/' + issue.photo) }}" class="detail-hero" alt="Issue photo">
+            {% endif %}
+
+            <div class="dark-card">
+                <!-- Badges -->
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span class="badge-category badge-{{ issue.category.lower() }}">{{ issue.category }}</span>
+                    <span class="badge-status badge-{{ issue.status }}">
+                        {% if issue.status == 'reported' %}🔴 Reported
+                        {% elif issue.status == 'in_progress' %}🟡 In Progress
+                        {% else %}🟢 Fixed{% endif %}
+                    </span>
+                    <span class="score-badge"><i class="bi bi-lightning-fill"></i> Priority: {{ score }}</span>
+                </div>
+
+                <h2 class="text-white fw-bold mb-2">{{ issue.title }}</h2>
+                <p style="color:var(--text-muted); font-size:0.875rem; margin-bottom:16px;">
+                    <i class="bi bi-geo-alt-fill"></i> {{ issue.location }}
+                </p>
+                <p style="color:var(--text-secondary); line-height:1.8;">{{ issue.description }}</p>
+
+                <!-- Info row -->
+                <div class="row g-3 mt-3 pt-3" style="border-top:1px solid var(--border);">
+                    <div class="col-4 text-center">
+                        <div style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">Reported By</div>
+                        <div class="fw-600 text-white mt-1">{{ issue.author.name }}</div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">Date</div>
+                        <div class="fw-600 text-white mt-1">{{ issue.created_at.strftime('%d %b %Y') }}</div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">Days Open</div>
+                        <div class="fw-600 text-white mt-1">{{ issue.days_open() }} days</div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex gap-3 align-items-center mt-4 pt-3" style="border-top:1px solid var(--border);">
+                    {% if current_user.is_authenticated %}
+                        <form method="POST" action="{{ url_for('upvote', issue_id=issue.id) }}">
+                            <button type="submit" class="upvote-btn {% if has_voted %}voted{% endif %}" style="padding:8px 20px; font-size:0.9rem;">
+                                <i class="bi bi-arrow-up-circle-fill"></i>
+                                {{ issue.upvotes }} Upvote{% if issue.upvotes != 1 %}s{% endif %}
+                            </button>
+                        </form>
+                        {% if issue.user_id == current_user.id or current_user.role == 'admin' %}
+                        <form method="POST" action="{{ url_for('delete_issue', issue_id=issue.id) }}"
+                              onsubmit="return confirm('Delete this issue?')">
+                            <button type="submit" class="btn btn-danger-soft">
+                                <i class="bi bi-trash-fill me-1"></i>Delete
+                            </button>
+                        </form>
+                        {% endif %}
+                    {% else %}
+                        <span class="upvote-btn">
+                            <i class="bi bi-arrow-up-circle-fill"></i> {{ issue.upvotes }} Upvotes
+                        </span>
+                        <a href="{{ url_for('login') }}" class="btn btn-accent btn-sm">Login to Upvote</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- COMMENTS -->
+            <div class="dark-card mt-4">
+                <h5 class="text-white mb-4">
+                    <i class="bi bi-chat-fill text-accent me-2"></i>
+                    Discussion <span style="color:var(--text-muted); font-size:0.875rem;">({{ comments|length }})</span>
+                </h5>
+
+                {% if current_user.is_authenticated %}
+                <form method="POST" action="{{ url_for('view_issue', issue_id=issue.id) }}" class="mb-4">
+                    <div class="d-flex gap-2">
+                        <div class="avatar-sm flex-shrink-0">{{ current_user.name[0].upper() }}</div>
+                        <div class="flex-grow-1">
+                            <textarea name="content" class="filter-input w-100" rows="2"
+                                      placeholder="Add a comment..." style="resize:none; padding:10px;"></textarea>
+                            <button type="submit" class="btn btn-accent btn-sm mt-2">
+                                <i class="bi bi-send-fill me-1"></i>Post Comment
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                {% else %}
+                <p style="color:var(--text-muted); font-size:0.875rem;">
+                    <a href="{{ url_for('login') }}" class="text-accent">Login</a> to join the discussion.
+                </p>
+                {% endif %}
+
+                {% if comments %}
+                    {% for comment in comments %}
+                    <div class="comment-item">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avatar-sm" style="width:28px; height:28px; font-size:0.7rem;">
+                                {{ comment.author.name[0].upper() }}
+                            </div>
+                            <span class="comment-author">{{ comment.author.name }}</span>
+                            <span class="comment-time">{{ comment.created_at.strftime('%d %b %Y') }}</span>
+                        </div>
+                        <p class="comment-text mb-0">{{ comment.content }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state py-4">
+                    <div style="font-size:2rem; color:var(--text-muted);">💬</div>
+                    <p class="empty-text mt-2">No comments yet. Be the first!</p>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="col-lg-4">
+            <div class="dark-card">
+                <h6 class="text-white mb-3"><i class="bi bi-lightning-fill text-accent me-2"></i>Priority Score Breakdown</h6>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span style="color:var(--text-muted); font-size:0.8rem;">Upvotes (× 2)</span>
+                        <span class="text-white fw-600">{{ issue.upvotes * 2 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span style="color:var(--text-muted); font-size:0.8rem;">Days Open (× 1.5)</span>
+                        <span class="text-white fw-600">{{ (issue.days_open() * 1.5) | round(1) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span style="color:var(--text-muted); font-size:0.8rem;">Category Weight</span>
+                        <span class="text-white fw-600">
+                            {% if issue.category == 'Water' %}5
+                            {% elif issue.category == 'Electricity' %}4
+                            {% elif issue.category == 'Road' %}3
+                            {% elif issue.category == 'Garbage' %}2
+                            {% else %}1{% endif %}
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between pt-2" style="border-top:1px solid var(--border);">
+                        <span class="text-accent fw-600">Total Score</span>
+                        <span class="text-accent fw-700 fs-5">{{ score }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dark-card mt-3">
+                <h6 class="text-white mb-3"><i class="bi bi-info-circle-fill text-accent me-2"></i>Issue Status</h6>
+                <div class="d-flex flex-column gap-2">
+                    <div class="d-flex align-items-center gap-2 {% if issue.status in ['reported', 'in_progress', 'fixed'] %}opacity-100{% else %}opacity-50{% endif %}">
+                        <div style="width:8px; height:8px; border-radius:50%; background:var(--danger);"></div>
+                        <span style="font-size:0.875rem; {% if issue.status == 'reported' %}color:var(--text-primary); font-weight:600;{% else %}color:var(--text-muted);{% endif %}">Reported</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width:8px; height:8px; border-radius:50%; background:{% if issue.status in ['in_progress', 'fixed'] %}var(--warning){% else %}var(--border){% endif %};"></div>
+                        <span style="font-size:0.875rem; {% if issue.status == 'in_progress' %}color:var(--text-primary); font-weight:600;{% else %}color:var(--text-muted);{% endif %}">In Progress</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width:8px; height:8px; border-radius:50%; background:{% if issue.status == 'fixed' %}var(--success){% else %}var(--border){% endif %};"></div>
+                        <span style="font-size:0.875rem; {% if issue.status == 'fixed' %}color:var(--text-primary); font-weight:600;{% else %}color:var(--text-muted);{% endif %}">Fixed ✓</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
